@@ -4,6 +4,7 @@ import { IconButton } from '~/components/ui/IconButton';
 import { workbenchStore } from '~/lib/stores/workbench';
 import { PortDropdown } from './PortDropdown';
 import { ScreenshotSelector } from './ScreenshotSelector';
+import { themeStore } from '~/lib/stores/theme';
 
 type ResizeSide = 'left' | 'right' | null;
 
@@ -86,6 +87,17 @@ export const Preview = memo(() => {
   const [isLandscape, setIsLandscape] = useState(false);
   const [showDeviceFrame, setShowDeviceFrame] = useState(true);
   const [showDeviceFrameInPreview, setShowDeviceFrameInPreview] = useState(false);
+
+  window.addEventListener('message', (event) => {
+    if (event.source === window.parent) {
+      if (event.data.type === 'appState') {
+        themeStore.set(event.data.params?.isDark ? 'dark' : 'light');
+      }
+      iframeRef.current?.contentWindow?.postMessage(event.data, '*');
+    } else {
+      window.parent.parent.postMessage(event.data, '*');
+    }
+  });
 
   useEffect(() => {
     if (!activePreview) {
